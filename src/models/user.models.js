@@ -3,6 +3,19 @@ import brcypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
+// Fallback expiries if env vars are missing/invalid
+const ACCESS_TOKEN_EXPIRY =
+  process.env.ACCESS_TOKEN_EXPIRY &&
+  typeof process.env.ACCESS_TOKEN_EXPIRY === "string"
+    ? process.env.ACCESS_TOKEN_EXPIRY
+    : "15m";
+
+const REFRESH_TOKEN_EXPIRY =
+  process.env.REFRESH_TOKEN_EXPIRY &&
+  typeof process.env.REFRESH_TOKEN_EXPIRY === "string"
+    ? process.env.REFRESH_TOKEN_EXPIRY
+    : "7d";
+
 const userSchema = new Schema(
   {
     avatar: {
@@ -63,12 +76,18 @@ const userSchema = new Schema(
   },
 );
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
   this.password = await brcypt.hash(this.password, 10);
-  next();
 });
+
+// userSchema.pre("save", async function (next) {
+//   if (!this.isModified("password")) return next();
+
+//   this.password = await brcypt.hash(this.password, 10);
+//   next();
+// });
 
 userSchema.methods.isPasswordCorrect = async function (password) {
   return await brcypt.compare(password, this.password);
@@ -82,7 +101,7 @@ userSchema.methods.generateAccessToken = function () {
       username: this.username,
     },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
+    { expiresIn: ACCESS_TOKEN_EXPIRY },
   );
 };
 
@@ -92,7 +111,7 @@ userSchema.methods.generateRefreshToken = function () {
       _id: this._id,
     },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY },
+    { expiresIn: REFRESH_TOKEN_EXPIRY },
   );
 };
 
