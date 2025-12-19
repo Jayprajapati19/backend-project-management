@@ -2,7 +2,11 @@ import { User } from "../models/user.models.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
 import { asyncHandler } from "../utils/async-handler.js";
-import { sendEmail, emailVerificationMailgenContent } from "../utils/mail.js";
+import {
+  sendEmail,
+  emailVerificationMailgenContent,
+  forgotPasswordMailgenContent,
+} from "../utils/mail.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   const user = await User.findById(userId);
@@ -315,6 +319,7 @@ const forgotPasswordRequest = asyncHandler(async (req, res) => {
       ),
     );
 });
+
 const resetForgotPassword = asyncHandler(async (req, res) => {
   const { resetToken } = req.params;
   const { newPassword } = req.body;
@@ -343,6 +348,7 @@ const resetForgotPassword = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, {}, "Password reset successfully"));
 });
+
 const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
@@ -359,7 +365,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {}, "Password changed successfully"));
+    .json(new ApiResponse(200, {}, "Password changed successfully ✅.."));
 });
 
 export {
